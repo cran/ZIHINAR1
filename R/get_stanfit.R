@@ -4,10 +4,10 @@
 #' (H-INAR(1)) model using Stan and returns the model fit.
 #'
 #' @param mod_type Character string indicating the model type.
-#' Use "zi" for zero-inflated
-#' models and "h" for hurdle models.
+#' Use "zi" for zero-inflated models and "h" for hurdle models.
 #' @param distri Character string specifying the distribution.
-#' Options are "poi" for Poisson or "nb" for Negative Binomial.
+#' Options are "poi" for Poisson, "nb" for Negative Binomial,
+#' or "gp" for Generalized Poisson.
 #' @param y A numeric vector of integers representing the observed data.
 #' @param n_pred Integer specifying the number of time points for future
 #' predictions (default is 4).
@@ -26,7 +26,7 @@
 #' @examples
 #' \donttest{
 #'   # Generate toy data
-#'   y_data <- data_simu(n = 60, alpha = 0.5, rho = 0.3, theta = c(5),
+#'   y_data <- data_simu(n = 60, alpha = 0.5, rho = 0.3, lambda = 5,
 #'                       mod_type = "zi", distri = "poi")
 #'
 #'   # Fit the model using Stan (small config)
@@ -48,21 +48,29 @@ get_stanfit <- function(mod_type, distri, y, n_pred = 4,
     stop("The parameter 'mod_type' must be either 'zi' for zero-inflated
          or 'h' for hurdle.")
   }
-  if (!(distri %in% c("poi", "nb"))) {
-    stop("The parameter 'distri' must be either 'poi' for Poisson
-         or 'nb' for Negative Binomial.")
+  if (!(distri %in% c("poi", "nb", "gp"))) {
+    stop("The parameter 'distri' must be one of: 'poi', 'nb', 'gp'.")
+  }
+  if (mod_type == "h" && distri == "gp") {
+    stop(paste0("Hurdle models ('h') are not implemented for distribution '", distri,
+                "'. Only Zero-Inflated ('zi') models are supported for GP."))
   }
 
 
-  stan_file <- if (dir.exists("stan")) "stan" else file.path("inst", "stan")
-  if (mod_type == "zi" && distri == "poi") {
-    stan_file <- file.path(stan_file, "ZIP-INAR1.stan")
-  } else if (mod_type == "zi" && distri == "nb") {
-    stan_file <- file.path(stan_file, "ZINB-INAR1.stan")
-  } else if (mod_type == "h" && distri == "poi") {
-    stan_file <- file.path(stan_file, "HP-INAR1.stan")
-  } else {
-    stan_file <- file.path(stan_file, "HNB-INAR1.stan")
+  stan_name <- switch(
+    paste0(mod_type, "_", distri),
+    "zi_poi" = "ZIP-INAR1.stan",
+    "zi_nb"  = "ZINB-INAR1.stan",
+    "zi_gp"  = "ZIGP-INAR1.stan",
+    "h_poi"  = "HP-INAR1.stan",
+    "h_nb"   = "HNB-INAR1.stan",
+    stop("Unsupported mod_type/distri combination: ", mod_type, "/", distri)
+  )
+
+  stan_file <- system.file("stan", stan_name, package = "ZIHINAR1")
+  if (stan_file == "") {
+    stop("Stan model file not found: ", stan_name, ". ",
+         "In the package source, it must be located at inst/stan/", stan_name, ".")
   }
 
   stan_fit <- rstan::stan(file = stan_file,

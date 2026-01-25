@@ -5,7 +5,7 @@
 #'
 #' @param y A numeric vector representing the observed data.
 #' @param mod_type Character string indicating the model type ("zi" or "h").
-#' @param distri Character string specifying the distribution ("poi" or "nb").
+#' @param distri Character string specifying the distribution ("poi", "nb", or "gp").
 #' @param stan_fit A \code{stanfit} object returned by \code{get_stanfit}.
 #' @return A summary table of model selection criteria, including:
 #' \describe{
@@ -22,7 +22,7 @@
 #' @examples
 #' \donttest{
 #'   # Generate toy data
-#'   y_data <- data_simu(n = 60, alpha = 0.5, rho = 0.3, theta = c(5),
+#'   y_data <- data_simu(n = 60, alpha = 0.5, rho = 0.3, lambda = 5,
 #'                       mod_type = "zi", distri = "poi")
 #'
 #'   # Fit a small Stan model (may take > 5s on first compile)
@@ -47,9 +47,12 @@ get_mod_sel <- function(y, mod_type, distri, stan_fit) {
     stop("The parameter 'mod_type' must be either 'zi' for zero-inflated
          or 'h' for hurdle.")
   }
-  if (!(distri %in% c("poi", "nb"))) {
-    stop("The parameter 'distri' must be either 'poi' for Poisson
-         or 'nb' for Negative Binomial.")
+  if (!(distri %in% c("poi", "nb", 'gp'))) {
+    stop("The parameter 'distri' must be one of: 'poi', 'nb', 'gp'.")
+  }
+  if (mod_type == "h" && distri == "gp") {
+    stop(paste0("Hurdle models ('h') are not implemented for distribution '", distri,
+                "'. Only Zero-Inflated ('zi') models are supported for GP."))
   }
   if (!inherits(stan_fit, "stanfit")) {
     stop("The parameter 'stan_fit' must be a valid 'stanfit' object
@@ -66,17 +69,24 @@ get_mod_sel <- function(y, mod_type, distri, stan_fit) {
     para.hat = summary(stan_fit, pars = c("alpha", "rho", "lambda"))$summary
     alpha.hat = para.hat[1, 1]
     rho.hat = para.hat[2, 1]
-    theta.hat = para.hat[3, 1]
+    lambda.hat = para.hat[3, 1]
+
+    logphat = sum(get_loglik(y, alpha = alpha.hat, rho = rho.hat,
+                             lambda = lambda.hat, disp = NA,
+                             mod_type, distri))
   } else {
     para.hat = summary(stan_fit,
                        pars = c("alpha", "rho", "lambda", "phi"))$summary
     alpha.hat = para.hat[1, 1]
     rho.hat = para.hat[2, 1]
-    theta.hat = c(para.hat[3, 1], para.hat[4, 1])
+    lambda.hat = para.hat[3, 1]
+    disp.hat = para.hat[4, 1]
+
+    logphat = sum(get_loglik(y, alpha = alpha.hat, rho = rho.hat,
+                             lambda = lambda.hat, disp = disp.hat,
+                             mod_type, distri))
   }
 
-  logphat = sum(get_loglik(y, alpha = alpha.hat, rho = rho.hat,
-                           theta = theta.hat, mod_type, distri))
   ll = data.frame(extract(stan_fit, pars = "ll"))
   pdic = 2 * (logphat - mean(ll[, 1]))
   dic = -2 * logphat + 2 * pdic

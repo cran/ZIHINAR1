@@ -11,7 +11,7 @@ get_mod_sel(y, mod_type, distri, stan_fit)
 
 \item{mod_type}{Character string indicating the model type ("zi" or "h").}
 
-\item{distri}{Character string specifying the distribution ("poi" or "nb").}
+\item{distri}{Character string specifying the distribution ("poi", "nb", or "gp").}
 
 \item{stan_fit}{A \code{stanfit} object returned by \code{get_stanfit}.}
 }
@@ -35,7 +35,7 @@ Stan model fit.
 \examples{
 \donttest{
   # Generate toy data
-  y_data <- data_simu(n = 60, alpha = 0.5, rho = 0.3, theta = c(5),
+  y_data <- data_simu(n = 60, alpha = 0.5, rho = 0.3, lambda = 5,
                       mod_type = "zi", distri = "poi")
 
   # Fit a small Stan model (may take > 5s on first compile)

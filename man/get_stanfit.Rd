@@ -18,11 +18,11 @@ get_stanfit(
 }
 \arguments{
 \item{mod_type}{Character string indicating the model type.
-Use "zi" for zero-inflated
-models and "h" for hurdle models.}
+Use "zi" for zero-inflated models and "h" for hurdle models.}
 
 \item{distri}{Character string specifying the distribution.
-Options are "poi" for Poisson or "nb" for Negative Binomial.}
+Options are "poi" for Poisson, "nb" for Negative Binomial,
+or "gp" for Generalized Poisson.}
 
 \item{y}{A numeric vector of integers representing the observed data.}
 
@@ -53,7 +53,7 @@ This function fits a Zero-Inflated INAR(1) (ZI-INAR(1)) or Hurdle INAR(1)
 \examples{
 \donttest{
   # Generate toy data
-  y_data <- data_simu(n = 60, alpha = 0.5, rho = 0.3, theta = c(5),
+  y_data <- data_simu(n = 60, alpha = 0.5, rho = 0.3, lambda = 5,
                       mod_type = "zi", distri = "poi")
 
   # Fit the model using Stan (small config)
