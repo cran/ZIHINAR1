@@ -1,4 +1,4 @@
-6a4947565fccd2e2a831bdd058471ebd *DESCRIPTION
+4d8db17a44f95992b6ba5a38e2b2ae3c *DESCRIPTION
 bb2dd242671016c9a9934099a5a45601 *NAMESPACE
 12a579908e356c53afbefdcff343cde3 *R/data_simu.R
 8fd23214ac991354a5e0a31ed3a9ac83 *R/get_est.R
@@ -13,7 +13,7 @@ c0964c5799ec5e178fa4eae8688fbacf *R/zzz.R
 76e123f5dcc8dee07678412adc0a2a84 *build/partial.rdb
 466e061822eb7a876f8eeeb54a8ca3d9 *inst/stan/HNB-INAR1.stan
 cd2e3864bfefac4c6390bcbedf84722b *inst/stan/HP-INAR1.stan
-a11218a43ec308f8d46d8d74a633ff5a *inst/stan/ZIIGP-INAR1.stan
+a931667f45cdf1e447e160fead81486e *inst/stan/ZIGP-INAR1.stan
 e118666f02efc36c57a02897fecf9224 *inst/stan/ZINB-INAR1.stan
 16ec83a38aa96f1b8a8bd0dff103c9ee *inst/stan/ZIP-INAR1.stan
 a91a43702aa4e709f1c087321e47e6e6 *man/data_simu.Rd
