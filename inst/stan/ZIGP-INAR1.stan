@@ -31,7 +31,7 @@ functions {
 
 data{
   int<lower=0> T;
-  int y[T];
+  array[T] int y;
     int<lower=0> ff; // forecast
 }
 parameters{
@@ -82,7 +82,7 @@ for (t in 1:T) {
 
 generated quantities { // FOR PREDICTION
     // Generate posterior predictives
-    int y_pred_ori[ff+1];
+    array[ff+1] int y_pred_ori;
     int aa;
 
     // First P points are known
@@ -99,8 +99,8 @@ generated quantities { // FOR PREDICTION
             y_pred_ori[t] +=generalized_poisson_rng(lambda, phi);
             }
     }
-    
-    int y_pred[ff];
+
+    array[ff] int y_pred;
 
     for (t in 1:ff) {
       y_pred[t] = y_pred_ori[t+1];
@@ -121,5 +121,3 @@ generated quantities { // FOR PREDICTION
     real bic = -2*ll+4*log(T-1);
 
 }
-
-

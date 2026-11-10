@@ -4,6 +4,8 @@
 #'
 #' @param stan_fit A \code{stanfit} object returned by \code{get_stanfit}.
 #' @return A summary of the predictions and bar charts of each prediction.
+#'   If no forecasts were requested, the summary has zero rows and the plot
+#'   list is empty.
 #'
 #' @examples
 #' \donttest{
@@ -35,6 +37,13 @@ get_pred <- function(stan_fit) {
          returned by Stan.")
   }
 
+  pred_dims <- stan_fit@par_dims[["y_pred"]]
+  if (length(pred_dims) && prod(pred_dims) == 0L) {
+    return(list(summary = data.frame(Mode = numeric(), Median = numeric(),
+                                     IQR = numeric(), Min = numeric(),
+                                     Max = numeric()), plots = list()))
+  }
+
   y_pred <- data.frame(rstan::extract(stan_fit, pars = "y_pred"))
 
   y_pred_summary <- data.frame(
@@ -48,7 +57,7 @@ get_pred <- function(stan_fit) {
   num_cols <- ncol(y_pred)
   plot_list <- list()
 
-  for (i in 1:num_cols) {
+  for (i in seq_len(num_cols)) {
     column_data <- as.data.frame(table(y_pred[, i]))
     colnames(column_data) <- c("Value", "Frequency")
 

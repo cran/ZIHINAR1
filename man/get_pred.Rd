@@ -11,6 +11,8 @@ get_pred(stan_fit)
 }
 \value{
 A summary of the predictions and bar charts of each prediction.
+If no forecasts were requested, the summary has zero rows and the plot
+list is empty.
 }
 \description{
 Extracts predicted values from a Stan model fit.

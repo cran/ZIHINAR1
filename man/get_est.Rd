@@ -8,7 +8,7 @@ get_est(distri, stan_fit)
 }
 \arguments{
 \item{distri}{Character string specifying the distribution. Options
-are "poi", "nb", or "gp".}
+are "poi", "nb", "gp", or "cmp".}
 
 \item{stan_fit}{A \code{stanfit} object returned by \code{get_stanfit}.}
 }

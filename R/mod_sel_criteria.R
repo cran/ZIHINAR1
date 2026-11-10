@@ -21,7 +21,11 @@ dgenpois_log <- function(y, lambda, phi) {
   out
 }
 
-get_likelihood = function(y, alpha, rho, lambda, disp = NA_real_, mod_type, distri) {
+get_likelihood = function(y, alpha, rho, lambda, disp = NA_real_, mod_type, distri, M = NULL) {
+
+  if (distri == "cmp") {
+    return(exp(get_loglik(y, alpha, rho, lambda, disp, mod_type, distri, M)))
+  }
 
   if (mod_type == "zi" && distri == "poi") {
     mu = c()
@@ -44,7 +48,7 @@ get_likelihood = function(y, alpha, rho, lambda, disp = NA_real_, mod_type, dist
           exp(dbinom(0, size = 1, prob = rho, log = TRUE) +
                 dpois(y[t], lambda = lambda, log = TRUE))
       }
-      for (j in 1:pp) {
+      for (j in seq_len(pp)) {
         if (y[t]==j) {
           mu[t] = mu[t] + exp(dbinom(j, size = y[t-1], prob = alpha,
                                      log = TRUE)) *
@@ -86,7 +90,7 @@ get_likelihood = function(y, alpha, rho, lambda, disp = NA_real_, mod_type, dist
                 dnbinom(y[t], size = disp, prob = betaBN/(betaBN+1),
                         log = TRUE))
       }
-      for (j in 1:pp) {
+      for (j in seq_len(pp)) {
         if (y[t]==j) {
           mu[t] = mu[t] + exp(dbinom(j, size = y[t-1], prob = alpha,
                                      log = TRUE)) *
@@ -125,7 +129,7 @@ get_likelihood = function(y, alpha, rho, lambda, disp = NA_real_, mod_type, dist
           exp(log(1-rho) + dpois(y[t], lambda = lambda, log = TRUE) -
                 log(1-ppois(0, lambda = lambda)))
       }
-      for (j in 1:pp) {
+      for (j in seq_len(pp)) {
         if (y[t]==j) {
           mu[t] = mu[t] + exp(dbinom(j, size = y[t-1], prob = alpha,
                                      log = TRUE)) * exp(log(rho))
@@ -161,7 +165,7 @@ get_likelihood = function(y, alpha, rho, lambda, disp = NA_real_, mod_type, dist
                                    prob = betaBN/(betaBN+1), log = TRUE) -
                 log(1-pnbinom(0, size = disp, prob = betaBN/(betaBN+1))))
       }
-      for (j in 1:pp) {
+      for (j in seq_len(pp)) {
         if (y[t]==j) {
           mu[t] = mu[t] + exp(dbinom(j, size = y[t-1], prob = alpha,
                                      log = TRUE)) * exp(log(rho))
@@ -198,7 +202,7 @@ get_likelihood = function(y, alpha, rho, lambda, disp = NA_real_, mod_type, dist
           exp(dbinom(0, size = 1, prob = rho, log = TRUE) +
                 dgenpois_log(y[t], lambda = lambda, phi = disp))
       }
-      for (j in 1:pp) {
+      for (j in seq_len(pp)) {
         if (y[t]==j) {
           mu[t] = mu[t] + exp(dbinom(j, size = y[t-1], prob = alpha, log = TRUE)) *
             (exp(dbinom(1, size = 1, prob = rho, log = TRUE)) +
@@ -223,12 +227,20 @@ get_likelihood = function(y, alpha, rho, lambda, disp = NA_real_, mod_type, dist
 
 
 
-get_loglik <- function(y, alpha, rho, lambda, disp = NA_real_, mod_type, distri) {
+get_loglik <- function(y, alpha, rho, lambda, disp = NA_real_, mod_type, distri, M = NULL) {
+  if (distri == "cmp") {
+    if (mod_type != "zi") stop("CMP is supported only for zero-inflated models.")
+    return(.cmp_loglik(y, alpha, rho, lambda, disp, M))
+  }
   log(get_likelihood(y, alpha, rho, lambda, disp, mod_type, distri))
 }
 
 
-mod_sel_criteria <- function(y, mod_type, distri, stanfit) {
+mod_sel_criteria <- function(y, mod_type, distri, stanfit, M = NULL) {
+  if (distri == "cmp") {
+    return(.cmp_model_selection(y, mod_type, stanfit, M))
+  }
+
   aic = data.frame(extract(stanfit, pars = "aic"))
   eaic = mean(aic[,1])
 

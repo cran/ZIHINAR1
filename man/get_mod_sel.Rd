@@ -4,16 +4,19 @@
 \alias{get_mod_sel}
 \title{Get Model Selection Criteria}
 \usage{
-get_mod_sel(y, mod_type, distri, stan_fit)
+get_mod_sel(y, mod_type, distri, stan_fit, M = NULL)
 }
 \arguments{
 \item{y}{A numeric vector representing the observed data.}
 
 \item{mod_type}{Character string indicating the model type ("zi" or "h").}
 
-\item{distri}{Character string specifying the distribution ("poi", "nb", or "gp").}
+\item{distri}{Character string specifying the distribution ("poi", "nb", "gp", or "cmp").}
 
 \item{stan_fit}{A \code{stanfit} object returned by \code{get_stanfit}.}
+
+\item{M}{CMP cutoff used in fitting. Retrieved from the fit returned by
+get_stanfit, or supplied explicitly for a fit made directly with Stan.}
 }
 \value{
 A summary table of model selection criteria, including:
@@ -26,7 +29,7 @@ Criterion (WAIC).}
 \item{WAIC2}{Second version of Watanabe-Akaike Information
 Criterion (WAIC).}
 }
-The summary is printed in a table format for easy interpretation.
+The criteria are returned in a one-row data frame.
 }
 \description{
 Calculates model selection criteria such as AIC, BIC, DIC, and WAIC from a
