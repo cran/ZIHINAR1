@@ -1,4 +1,4 @@
-c7b2a594096ee8427a429fdc63b93b19 *DESCRIPTION
+597224b6289c8b54f1d1a67e660a6cdd *DESCRIPTION
 6a94f0844f5d18b6689b380e1aeebf75 *NAMESPACE
 8ecf1239ccae0a1351e698f23499fff0 *R/data_simu.R
 62f8c76d35264830fddf9c353d2b8024 *R/get_est.R
@@ -10,7 +10,7 @@ c0f790a11191394e5b2fbd0ba952c71c *R/mod_sel_criteria.R
 1412f8f4aa836daa2f4f3fbe130775c4 *R/model_helpers.R
 a1f4de11f7d741936869854672155099 *R/stanfit_est.R
 c0964c5799ec5e178fa4eae8688fbacf *R/zzz.R
-66d5829be4e013616da15ff15ad885e2 *README.md
+cc87d9e4a4db483f8310c6c243544c2d *README.md
 21c9401b8c07f38d762ade4612fc4ffe *build/partial.rdb
 4e71122ac86176bfd64e1eb0a5913ef1 *inst/stan/HNB-INAR1.stan
 f17ffe3218b7cbd8014eda9e4fbbf7a4 *inst/stan/HP-INAR1.stan
@@ -20,11 +20,11 @@ f8064e9159e513b718530dbca392c5bc *inst/stan/ZIGP-INAR1.stan
 dd3b30da4f8c7559b963684d9cca4746 *inst/stan/ZINB-INAR1.stan
 adb64731c8e67522401839552e56ceb2 *inst/stan/ZIP-INAR1.stan
 d1115c8848d28fa8f99c57bc6b3a3f95 *man/data_simu.Rd
-52539942e3a8753bbccef040f4f76f03 *man/figures/README-example1-1.png
-979b19d42f9684528470b7e6ddf064f9 *man/figures/README-example1-2.png
-8889aa9a3d89c7650ff9cf2d47820fdf *man/figures/README-example1-3.png
-4a4284761260ba84e82f83fec2fad825 *man/figures/README-example1-4.png
-1d6210d22661048c1d15d40005c1f313 *man/figures/README-example1-5.png
+c65710870aeb06a005ffd95d557ad96b *man/figures/README-example1-1.png
+345ec30117da0a1095fa3c017f207979 *man/figures/README-example1-2.png
+e7810110a64c5411aae45f16bd210b7d *man/figures/README-example1-3.png
+2e7766f03215517f81adb5586292595e *man/figures/README-example1-4.png
+1abbed59f38f9db84cd44decdecf4809 *man/figures/README-example1-5.png
 744b2e71c535b16a16d05faf718fded3 *man/get_est.Rd
 72b3bf117e61fc142d9718a12e7ef531 *man/get_mod_sel.Rd
 e430d00eb9ddc2b5fef574a981d1fa42 *man/get_pred.Rd

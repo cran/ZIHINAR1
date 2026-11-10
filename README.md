@@ -5,7 +5,8 @@ The First-order Integer-valued Autoregressive (INAR(1)) model with
 zero-inflated (ZI-INAR(1)) and hurdle (H-INAR(1)) innovations is widely
 used in studying integer-valued time-series data, such as crime count
 and heatwave frequency. This work implemented the INAR(1) models in
-Stan.
+Stan. The package now also supports zero-inflated INAR(1) models with
+Conway-Maxwell-Poisson (CMP) innovations.
 
 ## Installation
 
@@ -29,7 +30,9 @@ The package contains main function named get_stanfit().
 ``` r
 stan_fit <- get_stanfit(mod_type, distri, y, n_pred = 4,
                         thin = 2, chains = 1, iter = 2000, warmup = iter/2,
-                        seed = NA)
+                        seed = NA, M = NULL,
+                        cmp_version = c("fast", "reference"),
+                        cmp_tail_tol = 1e-6, tail_action = c("warn", "error"), ...)
 ```
 
 - `mod_type`: Character string indicating the model type. Use `"zi"` for
@@ -38,10 +41,9 @@ stan_fit <- get_stanfit(mod_type, distri, y, n_pred = 4,
 - `distri`: Innovation distribution. Options:
 
   - `"poi"`: Poisson
-
   - `"nb"`: Negative Binomial
-
   - `"gp"`: Generalized Poisson (ZI only)
+  - `"cmp"`: Conway-Maxwell-Poisson (ZI only)
 
 - `y`: A numeric vector of integers representing the observed data.
 
@@ -62,6 +64,20 @@ stan_fit <- get_stanfit(mod_type, distri, y, n_pred = 4,
 
 - `seed`: Numeric seed for reproducibility (default is NA).
 
+- `M`: CMP innovation cutoff. The default is the larger of 300 and
+  `max(y)`.
+
+- `cmp_version`: CMP Stan implementation, either `"fast"` (default) or
+  `"reference"`. Both use the same likelihood and priors.
+
+- `cmp_tail_tol`: Tolerance for the CMP omitted probability mass bound
+  (default is `1e-6`).
+
+- `tail_action`: Use `"warn"` (default) or `"error"` when the CMP tail
+  bound exceeds the tolerance. Increase `M` and refit if this happens.
+
+- `...`: Additional arguments passed to `rstan::stan()`.
+
 ## Example
 
 The following are examples showing how to fit the INAR(1) model when
@@ -78,8 +94,8 @@ stan_fit <- get_stanfit(mod_type = "zi", distri = "nb", y = y_data, n_pred = 5,
 #> 
 #> SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 1).
 #> Chain 1: 
-#> Chain 1: Gradient evaluation took 0.000715 seconds
-#> Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 7.15 seconds.
+#> Chain 1: Gradient evaluation took 0.000174 seconds
+#> Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.74 seconds.
 #> Chain 1: Adjust your expectations accordingly!
 #> Chain 1: 
 #> Chain 1: 
@@ -96,32 +112,27 @@ stan_fit <- get_stanfit(mod_type = "zi", distri = "nb", y = y_data, n_pred = 5,
 #> Chain 1: Iteration: 1900 / 2000 [ 95%]  (Sampling)
 #> Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 #> Chain 1: 
-#> Chain 1:  Elapsed Time: 3.277 seconds (Warm-up)
-#> Chain 1:                9.208 seconds (Sampling)
-#> Chain 1:                12.485 seconds (Total)
+#> Chain 1:  Elapsed Time: 0.656 seconds (Warm-up)
+#> Chain 1:                1.818 seconds (Sampling)
+#> Chain 1:                2.474 seconds (Total)
 #> Chain 1:
 get_est(distri = "nb", stan_fit = stan_fit)
-#>             Mean         SD    Median       Q2.5     Q97.5      Rhat
-#> alpha  0.5307909 0.04108348 0.5327549 0.44979898 0.6019402 1.0047284
-#> rho    0.3696123 0.12017678 0.3837477 0.07870574 0.5645864 1.0047853
-#> lambda 4.9954050 0.82387796 5.0098591 3.52989514 6.5890245 0.9998295
-#> phi    2.4923431 1.50853128 2.1013737 0.70294059 6.5018753 0.9997752
-#>        95%_HPD_Lower 95%_HPD_Upper
-#> alpha     0.45032117     0.6028335
-#> rho       0.08011943     0.5648035
-#> lambda    3.64535329     6.6350831
-#> phi       0.48503911     5.3722200
+#>             Mean         SD    Median       Q2.5     Q97.5      Rhat 95%_HPD_Lower 95%_HPD_Upper
+#> alpha  0.4698743 0.05105897 0.4761154 0.36081446 0.5589632 0.9999792   0.361243245     0.5591202
+#> rho    0.2258471 0.12798091 0.2228731 0.02060225 0.4858715 1.0024684   0.005271078     0.4496370
+#> lambda 4.4128266 0.74546675 4.3652389 3.12326655 6.0788370 1.0063409   2.824085820     5.7147138
+#> phi    1.5557630 0.74007545 1.3769369 0.64861912 3.4650565 1.0020000   0.500559232     2.9273579
 get_mod_sel(y = y_data, mod_type = "zi", distri = "nb", stan_fit = stan_fit)
-#>       EAIC     EBIC      DIC    WAIC1    WAIC2
-#> 1 519.2344 529.6149 527.1945 514.9319 515.2939
+#>      EAIC     EBIC      DIC    WAIC1    WAIC2
+#> 1 531.541 541.9215 526.9322 526.6891 526.9263
 get_pred(stan_fit = stan_fit)
 #> $summary
 #>          Mode Median IQR Min Max
-#> y_pred.1    5      7   5   1  39
-#> y_pred.2    3      6   7   0  30
-#> y_pred.3    4      6   7   0  32
-#> y_pred.4    6      6   6   0  28
-#> y_pred.5    2      6   7   0  40
+#> y_pred.1    6      7   5   1  36
+#> y_pred.2    4      6   6   0  33
+#> y_pred.3    3      6   6   0  43
+#> y_pred.4    3      6   6   0  34
+#> y_pred.5    4      5   6   0  27
 #> 
 #> $plots
 #> $plots[[1]]
@@ -148,3 +159,19 @@ get_pred(stan_fit = stan_fit)
     #> $plots[[5]]
 
 <img src="man/figures/README-example1-5.png" alt="" width="70%" style="display: block; margin: auto;" />
+
+## Example with CMP innovations
+
+For CMP, `disp` in `data_simu()` is the dispersion parameter `nu`
+reported by `get_est()`. The parameter `lambda` is the CMP rate.
+
+``` r
+set.seed(42)
+y_cmp <- data_simu(n = 100, alpha = 0.5, rho = 0.3, lambda = 2.5, disp = 1.2,
+                   mod_type = "zi", distri = "cmp")
+fit_cmp <- get_stanfit(mod_type = "zi", distri = "cmp", y = y_cmp, n_pred = 5,
+                       iter = 2000, chains = 4, warmup = 1000, seed = 42)
+get_est(distri = "cmp", stan_fit = fit_cmp)
+get_mod_sel(y = y_cmp, mod_type = "zi", distri = "cmp", stan_fit = fit_cmp)
+get_pred(stan_fit = fit_cmp)
+```
